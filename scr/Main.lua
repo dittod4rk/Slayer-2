@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 
 local player = Players.LocalPlayer
 
-local BASE_URL = "https://raw.githubusercontent.com/dittod4rk/Slayer-2/refs/heads/main/scr/Main.lua"
+local BASE_URL = "https://raw.githubusercontent.com/dittod4rk/Slayer-2/refs/heads/main/scr/"
 
 local Settings = {
 	PROMPT_SCAN_DISTANCE = 100,
@@ -21,57 +21,77 @@ local Settings = {
 local function loadModule(fileName)
 	local url = BASE_URL .. fileName .. ".lua"
 
-	local response = game:HttpGet(url)
+	print("[Loader] Loading:", url)
+
+	local success, response = pcall(function()
+		return game:HttpGet(url)
+	end)
+
+	if not success then
+		error(
+			"[Loader] Failed to download "
+			.. fileName
+			.. ".lua:\n"
+			.. tostring(response)
+		)
+	end
 
 	if not response or response == "" then
-		error("Empty response while loading " .. fileName .. ".lua")
+		error(
+			"[Loader] Empty response while loading "
+			.. fileName
+			.. ".lua"
+		)
+	end
+
+	if response:find("404: Not Found", 1, true) then
+		error(
+			"[Loader] 404 - File not found:\n"
+			.. url
+		)
 	end
 
 	local chunk, compileError = loadstring(response)
 
 	if not chunk then
 		error(
-			"Failed to compile "
+			"[Loader] Failed to compile "
 			.. fileName
 			.. ".lua:\n"
 			.. tostring(compileError)
 		)
 	end
 
-	local success, result = pcall(chunk)
+	local successExecute, result = pcall(chunk)
 
-	if not success then
+	if not successExecute then
 		error(
-			"Failed to execute "
+			"[Loader] Failed to execute "
 			.. fileName
 			.. ".lua:\n"
 			.. tostring(result)
 		)
 	end
 
+	if type(result) ~= "table" then
+		error(
+			"[Loader] "
+			.. fileName
+			.. ".lua did not return a table"
+		)
+	end
+
+	print("[Loader] Loaded:", fileName)
+
 	return result
 end
+
 
 local UI = loadModule("UI")
 local Souls = loadModule("Souls")
 local Teleports = loadModule("Teleports")
 local BossFarm = loadModule("BossFarm")
 
-if type(UI) ~= "table" then
-	error("UI.lua did not return a table")
-end
-
-if type(Souls) ~= "table" then
-	error("Souls.lua did not return a table")
-end
-
-if type(Teleports) ~= "table" then
-	error("Teleports.lua did not return a table")
-end
-
-if type(BossFarm) ~= "table" then
-	error("BossFarm.lua did not return a table")
-end
 
 local State = {
 	autoFarmBoss = false,
@@ -93,6 +113,7 @@ local State = {
 	bossOriginalAnchored = nil
 }
 
+
 local gui, controls = UI.Create(
 	player,
 	State,
@@ -100,8 +121,9 @@ local gui, controls = UI.Create(
 )
 
 if not gui then
-	error("UI.Create() did not return a GUI")
+	error("[Main] UI.Create() did not return a GUI")
 end
+
 
 Souls.Start(
 	player,
@@ -110,6 +132,7 @@ Souls.Start(
 	Settings
 )
 
+
 Teleports.Start(
 	player,
 	gui,
@@ -117,9 +140,12 @@ Teleports.Start(
 	Settings
 )
 
+
 BossFarm.Start(
 	player,
 	gui,
 	State,
 	Settings
 )
+
+print("[Main] Everything loaded successfully")
