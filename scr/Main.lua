@@ -88,7 +88,7 @@ end
 
 
 local UI = loadModule("UI")
-local Souls = loadModule("Souls")
+local Souls = loadModule("Soul")
 local Teleports = loadModule("Teleports")
 local BossFarm = loadModule("BossFarm")
 
