@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 
 local player = Players.LocalPlayer
 
-local BASE_URL = "https://raw.githubusercontent.com/dittod4rk/Slayer-2/main/"
+local BASE_URL = "https://raw.githubusercontent.com/dittod4rk/Slayer-2/refs/heads/main/scr/"
 
 local Settings = {
 	PROMPT_SCAN_DISTANCE = 100,
